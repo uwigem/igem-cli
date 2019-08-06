@@ -6,6 +6,9 @@ import figlet from 'figlet';
 import path from 'path';
 import program from 'commander';
 import { MAIN_COLOR, SECONDARY_COLOR } from './constants/CLI-Constants';
+import { errorAndCrash } from './utils/errorAndCrash';
+import { initPuppetAndAuthenticate } from './utils/initPuppetAndAuthenticate';
+import { editPage, EditPageOptions } from './actions/newpage';
 
 // Print CLI intro line
 clear();
@@ -20,20 +23,40 @@ console.log(
 	"\n"
 );
 
-// Get environment configs
+// Get environment configs, crash if not set.
 const igemUsername = process.env.IGEM_USERNAME;
 const igemPassword = process.env.IGEM_PASSWORD;
-if (!igemUsername || !igemPassword) {
-	console.log(chalk.bgRed("Error! Username/Password not specified. Please see the README for more instructions."));
-	process.exit(1);
+const igemTeam = process.env.IGEM_TEAM;
+const igemYear = process.env.IGEM_YEAR;
+
+if (!igemUsername || !igemPassword || !igemTeam || !igemYear) {
+	errorAndCrash(["Error! Username/Password/Team/Year not specified. Please see the README for more instructions."]);
 }
 
+// Set up routes
 program
 	.version("0.0.1")
 	.description("Deploy to the iGEM Site easier!")
-	.option("-n, --newpage", "Create a new page")
+	.option("-e, --edit", "Create a new page")
 	.parse(process.argv);
 
-if (program.newpage) {
-	console.log("new page is now being created");
-}
+const restArgs = process.argv.slice(2);
+
+
+// Main
+(async () => {
+	if (program.edit) {
+		const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
+		afterAuth<EditPageOptions>(editPage, {
+			pageName: "wkwokTestPage4",
+			pageContent: "hihi",
+			igemTeam: igemTeam!,
+			igemYear: igemYear!
+		});
+	}
+
+	// Show the help menu if not enough arguments provided
+	if (restArgs.length < 1) {
+		program.outputHelp();
+	}
+})();
