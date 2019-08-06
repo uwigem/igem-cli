@@ -8,8 +8,9 @@ import program from 'commander';
 import { MAIN_COLOR, SECONDARY_COLOR } from './constants/CLI-Constants';
 import { errorAndCrash } from './utils/errorAndCrash';
 import { initPuppetAndAuthenticate } from './utils/initPuppetAndAuthenticate';
-import { editPage, EditPageOptions } from './actions/newpage';
+import { editPage, EditPageOptions } from './actions/editPage';
 import fs from 'fs';
+import { progressMessage } from './utils/progressMessages';
 
 
 // Print CLI intro line
@@ -39,7 +40,7 @@ if (!igemUsername || !igemPassword || !igemTeam || !igemYear) {
 program
 	.version("0.0.1")
 	.description("Deploy to the iGEM Site easier!")
-	.option("-e, --edit", "Create a new page")
+	.option("-e, --edit <page name> <content file>", "Create a new page or edit an existing page")
 	.parse(process.argv);
 
 const restArgs = process.argv.slice(3);
@@ -48,10 +49,12 @@ const restArgs = process.argv.slice(3);
 try {
 	(async () => {
 		if (program.edit) {
+			let pageName = restArgs[0];
+			progressMessage(`Editing page: ${pageName}`);
 			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
 			const fileContents = fs.readFileSync(path.join(process.cwd(), restArgs[1]), { encoding: 'utf8' });
 			afterAuth<EditPageOptions>(editPage, {
-				pageName: restArgs[0],
+				pageName,
 				pageContent: fileContents,
 				igemTeam: igemTeam!,
 				igemYear: igemYear!
