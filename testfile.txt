@@ -1,5 +1,0 @@
-abc 123
-
-content woo
-
-this message was made through the igem cli

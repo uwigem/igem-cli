@@ -23,6 +23,6 @@ export const initPuppetAndAuthenticate = async (igemUsername: string, igemPasswo
 	progressMessage("Login success!");
 
 	return async <T>(afterAuthFunction: AfterAuthenticationFunction<T>, afterAuthFunctionOptions: T) => {
-		afterAuthFunction(browser, page, afterAuthFunctionOptions);
+		await afterAuthFunction(browser, page, afterAuthFunctionOptions);
 	}
 }

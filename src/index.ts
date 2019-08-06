@@ -10,7 +10,7 @@ import { errorAndCrash } from './utils/errorAndCrash';
 import { initPuppetAndAuthenticate } from './utils/initPuppetAndAuthenticate';
 import { editPage, EditPageOptions } from './actions/editPage';
 import fs from 'fs';
-import { progressMessage } from './utils/progressMessages';
+import { progressMessage, successMessage } from './utils/progressMessages';
 
 
 // Print CLI intro line
@@ -40,7 +40,8 @@ if (!igemUsername || !igemPassword || !igemTeam || !igemYear) {
 program
 	.version("0.0.1")
 	.description("Deploy to the iGEM Site easier!")
-	.option("-e, --edit <page name> <content file>", "Create a new page or edit an existing page")
+	.option("-e, --edit <page name> <content file>", "Create a new page or edit an existing page.")
+	.option("-a, --all <content folder>", "Create content pages from html files inside a specified folder")
 	.parse(process.argv);
 
 const restArgs = process.argv.slice(3);
@@ -53,12 +54,33 @@ try {
 			progressMessage(`Editing page: ${pageName}`);
 			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
 			const fileContents = fs.readFileSync(path.join(process.cwd(), restArgs[1]), { encoding: 'utf8' });
-			afterAuth<EditPageOptions>(editPage, {
+			await afterAuth<EditPageOptions>(editPage, {
 				pageName,
 				pageContent: fileContents,
 				igemTeam: igemTeam!,
 				igemYear: igemYear!
 			});
+			process.exit(0);
+		}
+
+		if (program.all) {
+			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
+			const files = fs.readdirSync(path.join(process.cwd(), restArgs[0]));
+			successMessage(`Found files ${files.join(", ")}`);
+
+			// async await does not work inside forEach loops
+			for (let i = 0; i < files.length; i++) {
+				let file = files[i];
+				let pageName = file.split(".")[0];
+				const fileContents = fs.readFileSync(path.join(process.cwd(), restArgs[0], file), { encoding: 'utf8' });
+				await afterAuth<EditPageOptions>(editPage, {
+					pageName,
+					pageContent: fileContents,
+					igemTeam: igemTeam!,
+					igemYear: igemYear!
+				});
+			}
+			process.exit(0);
 		}
 
 		// Show the help menu if not enough arguments provided
