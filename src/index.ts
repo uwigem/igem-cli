@@ -9,6 +9,8 @@ import { MAIN_COLOR, SECONDARY_COLOR } from './constants/CLI-Constants';
 import { errorAndCrash } from './utils/errorAndCrash';
 import { initPuppetAndAuthenticate } from './utils/initPuppetAndAuthenticate';
 import { editPage, EditPageOptions } from './actions/newpage';
+import fs from 'fs';
+
 
 // Print CLI intro line
 clear();
@@ -40,23 +42,27 @@ program
 	.option("-e, --edit", "Create a new page")
 	.parse(process.argv);
 
-const restArgs = process.argv.slice(2);
-
+const restArgs = process.argv.slice(3);
 
 // Main
-(async () => {
-	if (program.edit) {
-		const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
-		afterAuth<EditPageOptions>(editPage, {
-			pageName: "wkwokTestPage4",
-			pageContent: "hihi",
-			igemTeam: igemTeam!,
-			igemYear: igemYear!
-		});
-	}
+try {
+	(async () => {
+		if (program.edit) {
+			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
+			const fileContents = fs.readFileSync(path.join(process.cwd(), restArgs[1]), { encoding: 'utf8' });
+			afterAuth<EditPageOptions>(editPage, {
+				pageName: restArgs[0],
+				pageContent: fileContents,
+				igemTeam: igemTeam!,
+				igemYear: igemYear!
+			});
+		}
 
-	// Show the help menu if not enough arguments provided
-	if (restArgs.length < 1) {
-		program.outputHelp();
-	}
-})();
+		// Show the help menu if not enough arguments provided
+		if (restArgs.length < 1) {
+			program.outputHelp();
+		}
+	})();
+} catch (error) {
+	errorAndCrash(error);
+}
