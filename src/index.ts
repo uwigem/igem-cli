@@ -11,6 +11,7 @@ import { initPuppetAndAuthenticate } from './utils/initPuppetAndAuthenticate';
 import { editPage, EditPageOptions } from './actions/editPage';
 import fs from 'fs';
 import { progressMessage, successMessage } from './utils/progressMessages';
+import { UploadImageOptions, UploadImageReturn, uploadImage } from './actions/uploadImage';
 
 
 // Print CLI intro line
@@ -40,8 +41,9 @@ if (!igemUsername || !igemPassword || !igemTeam || !igemYear) {
 program
 	.version("0.0.1")
 	.description("Deploy to the iGEM Site easier!")
-	.option("-e, --edit <page name> <content file>", "Create a new page or edit an existing page.")
+	.option("-e, --edit <page name> <content path>", "Create a new page or edit an existing page.")
 	.option("-a, --all <content folder>", "Create content pages from html files inside a specified folder")
+	.option("-i, --image <image path>", "Upload an image to the igem site.")
 	.parse(process.argv);
 
 const restArgs = process.argv.slice(3);
@@ -54,7 +56,7 @@ try {
 			progressMessage(`Editing page: ${pageName}`);
 			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
 			const fileContents = fs.readFileSync(path.join(process.cwd(), restArgs[1]), { encoding: 'utf8' });
-			await afterAuth<EditPageOptions>(editPage, {
+			await afterAuth<EditPageOptions, void>(editPage, {
 				pageName,
 				pageContent: fileContents,
 				igemTeam: igemTeam!,
@@ -73,7 +75,7 @@ try {
 				let file = files[i];
 				let pageName = file.split(".")[0];
 				const fileContents = fs.readFileSync(path.join(process.cwd(), restArgs[0], file), { encoding: 'utf8' });
-				await afterAuth<EditPageOptions>(editPage, {
+				await afterAuth<EditPageOptions, void>(editPage, {
 					pageName,
 					pageContent: fileContents,
 					igemTeam: igemTeam!,
@@ -81,6 +83,22 @@ try {
 				});
 			}
 			process.exit(0);
+		}
+
+		if (program.image) {
+			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
+			const imagePath = path.join(process.cwd(), restArgs[0]);
+			const fileNameSplit = restArgs[0].split("/");
+			const fileName = fileNameSplit[fileNameSplit.length - 1];
+
+			const imageUrl = await afterAuth<UploadImageOptions, UploadImageReturn>(uploadImage, {
+				igemTeam: igemTeam!,
+				igemYear: igemYear!,
+				imagePath,
+				fileName
+			});
+
+			successMessage(`${fileName}:\t\t${imageUrl}`);
 		}
 
 		// Show the help menu if not enough arguments provided

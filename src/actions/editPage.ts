@@ -9,7 +9,7 @@ export type EditPageOptions = {
 	igemYear: string
 }
 
-export const editPage: AfterAuthenticationFunction<EditPageOptions> = async (browser, page, { pageName, pageContent, igemTeam, igemYear }) => {
+export const editPage: AfterAuthenticationFunction<EditPageOptions, void> = async (browser, page, { pageName, pageContent, igemTeam, igemYear }) => {
 	let pageToEdit = `${HTTPS}${igemYear}${NEWPAGE.REST_URL}${igemTeam}/${pageName}${NEWPAGE.ACTION_EDIT}`;
 	await page.goto(
 		pageToEdit,

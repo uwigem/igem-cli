@@ -1,4 +1,6 @@
 import { AfterAuthenticationFunction } from '../types/afterAuthFunction';
+import { HTTPS } from '../constants/igem-Constants';
+import { progressMessage, successMessage, failMessage } from '../utils/progressMessages';
 
 export type UploadImageOptions = {
 	igemTeam: string,
@@ -7,13 +9,53 @@ export type UploadImageOptions = {
 	fileName: string
 }
 
-export const uploadImage: AfterAuthenticationFunction<UploadImageOptions> = async (browser, page, { igemTeam, igemYear, imagePath, fileName }) => {
-	// https://2019.igem.org/Special:Upload
-	// https://2019.igem.org/File:T--Washington--testimage2.png
+export type UploadImageReturn = Promise<string>;
+
+export const uploadImage: AfterAuthenticationFunction<UploadImageOptions, UploadImageReturn> = async (browser, page, { igemTeam, igemYear, imagePath, fileName }) => {
+	let supposedFinalImageLink = `${HTTPS}${igemYear}.igem.org/File:T--${igemTeam}--${fileName}`;
+	await page.goto(supposedFinalImageLink, { waitUntil: "domcontentloaded" });
+	progressMessage(`Checking if ${fileName} exists...`);
+	let possibleImageElement: string;
+
+	try {
+		possibleImageElement = await page.$eval(".fullImageLink", (el) => {
+			if (el) {
+				return (el.children[0].children[0] as HTMLImageElement).src;
+			}
+			return "";
+		});
+	} catch (e) {
+		possibleImageElement = "";
+	}
+
+	if (possibleImageElement !== "") {
+		progressMessage(`${fileName} exists, ignoring...`);
+		return possibleImageElement;
+	}
+
 	await page.goto(`https://${igemYear}.igem.org/Special:Upload`, { waitUntil: "domcontentloaded" });
+	progressMessage(`Uploading ${fileName}...`);
 	const uploadButton = await page.$('input#wpUploadFile');
-	await uploadButton.uploadFile(imagePath);
+	await uploadButton!.uploadFile(imagePath);
 	await page.type("#wpDestFile", `T--${igemTeam}--${fileName}`);
-	await page.click("#wpUpload");
+	await page.click(`input[name="wpUpload"]`);
 	await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+
+
+	successMessage(`${fileName} uploaded!`);
+
+
+
+	try {
+		possibleImageElement = await page.$eval(".fullImageLink", (el) => {
+			if (el) {
+				return (el.children[0].children[0] as HTMLImageElement).src;
+			}
+			return "";
+		});
+	} catch (e) {
+		failMessage(`Failed to upload ${fileName}`);
+	}
+
+	return possibleImageElement;
 }

@@ -7,3 +7,7 @@ export const progressMessage = (msg: string) => {
 export const successMessage = (msg: string) => {
 	console.log(chalk.green(msg));
 }
+
+export const failMessage = (msg: string) => {
+	console.log(chalk.red(msg));
+}
