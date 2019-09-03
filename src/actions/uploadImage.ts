@@ -38,13 +38,14 @@ export const uploadImage: AfterAuthenticationFunction<UploadImageOptions, Upload
 	const uploadButton = await page.$('input#wpUploadFile');
 	await uploadButton!.uploadFile(imagePath);
 	await page.type("#wpDestFile", `T--${igemTeam}--${fileName}`);
-	await page.click(`input[name="wpUpload"]`);
-	await page.waitForNavigation({ waitUntil: "domcontentloaded" });
 
+	await Promise.all([
+		page.click(`input[name="wpUpload"]`),
+		// page.waitForSelector(`img[alt="File:T--${igemTeam}--${fileName}"]`)
+		await page.waitForNavigation({ waitUntil: "domcontentloaded" })
+	]);
 
 	successMessage(`${fileName} uploaded!`);
-
-
 
 	try {
 		possibleImageElement = await page.$eval(".fullImageLink", (el) => {
