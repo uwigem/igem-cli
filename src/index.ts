@@ -44,6 +44,7 @@ program
 	.option("-e, --edit <page name> <content path>", "Create a new page or edit an existing page.")
 	.option("-a, --all <content folder>", "Create content pages from html files inside a specified folder")
 	.option("-i, --image <image path>", "Upload an image to the igem site.")
+	.option("-I, --imagesall <image folder path>", "Upload multiple images within a folder.")
 	.parse(process.argv);
 
 const restArgs = process.argv.slice(3);
@@ -99,6 +100,30 @@ try {
 			});
 
 			successMessage(`${fileName}:\t\t${imageUrl}`);
+			process.exit(0);
+		}
+
+		if (program.imagesall) {
+			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
+			const files = fs.readdirSync(path.join(process.cwd(), restArgs[0]));
+			const imageFolderPath = path.join(process.cwd(), restArgs[0]);
+			successMessage(`Found files ${files.join(", ")}`);
+			let images: { [idx: string]: string } = {};
+
+			for (let i = 0; i < files.length; i++) {
+				let fileName = files[i];
+				let imagePath = path.join(imageFolderPath, fileName);
+				const imageUrl = await afterAuth<UploadImageOptions, UploadImageReturn>(uploadImage, {
+					igemTeam: igemTeam!,
+					igemYear: igemYear!,
+					imagePath,
+					fileName
+				});
+				images[fileName] = imageUrl;
+			}
+			successMessage(`Images as JSON: `);
+			successMessage(JSON.stringify(images));
+			process.exit(0);
 		}
 
 		// Show the help menu if not enough arguments provided

@@ -39,9 +39,9 @@ export const uploadImage: AfterAuthenticationFunction<UploadImageOptions, Upload
 	await uploadButton!.uploadFile(imagePath);
 	await page.type("#wpDestFile", `T--${igemTeam}--${fileName}`);
 
+	// https://github.com/GoogleChrome/puppeteer/issues/1637#issuecomment-355223428
 	await Promise.all([
 		page.click(`input[name="wpUpload"]`),
-		// page.waitForSelector(`img[alt="File:T--${igemTeam}--${fileName}"]`)
 		await page.waitForNavigation({ waitUntil: "domcontentloaded" })
 	]);
 
