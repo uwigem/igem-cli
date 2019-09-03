@@ -39,9 +39,10 @@ if (!igemUsername || !igemPassword || !igemTeam || !igemYear) {
 
 // Set up routes
 program
-	.version("1.0.0")
+	.version("1.0.3")
 	.description("Deploy to the iGEM Site easier!")
 	.option("-e, --edit <page name> <content path>", "Create a new page or edit an existing page.")
+	.option("-t, --template <template name> <content path>", "Create or edit a template page")
 	.option("-a, --all <content folder>", "Create content pages from html files inside a specified folder")
 	.option("-i, --image <image path>", "Upload an image to the igem site.")
 	.option("-I, --imagesall <image folder path>", "Upload multiple images within a folder.")
@@ -52,7 +53,7 @@ const restArgs = process.argv.slice(3);
 // Main
 try {
 	(async () => {
-		if (program.edit) {
+		if (program.edit || program.template) {
 			let pageName = restArgs[0];
 			progressMessage(`Editing page: ${pageName}`);
 			const afterAuth = await initPuppetAndAuthenticate(igemUsername!, igemPassword!);
@@ -61,7 +62,8 @@ try {
 				pageName,
 				pageContent: fileContents,
 				igemTeam: igemTeam!,
-				igemYear: igemYear!
+				igemYear: igemYear!,
+				template: program.template ? true : false
 			});
 			process.exit(0);
 		}

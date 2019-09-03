@@ -6,11 +6,12 @@ export type EditPageOptions = {
 	pageName: string,
 	pageContent: string
 	igemTeam: string
-	igemYear: string
+	igemYear: string,
+	template?: boolean
 }
 
-export const editPage: AfterAuthenticationFunction<EditPageOptions, void> = async (browser, page, { pageName, pageContent, igemTeam, igemYear }) => {
-	let pageToEdit = `${HTTPS}${igemYear}${NEWPAGE.REST_URL}${igemTeam}/${pageName}${NEWPAGE.ACTION_EDIT}`;
+export const editPage: AfterAuthenticationFunction<EditPageOptions, void> = async (browser, page, { pageName, pageContent, igemTeam, igemYear, template }) => {
+	let pageToEdit = `${HTTPS}${igemYear}${template ? NEWPAGE.TEMPLATE_URL : NEWPAGE.REST_URL}${igemTeam}/${pageName}${NEWPAGE.ACTION_EDIT}`;
 	await page.goto(
 		pageToEdit,
 		{ waitUntil: "domcontentloaded" }

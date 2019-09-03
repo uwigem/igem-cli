@@ -19,9 +19,9 @@ export const uploadImage: AfterAuthenticationFunction<UploadImageOptions, Upload
 	let possibleImageElement: string;
 
 	try {
-		possibleImageElement = await page.$eval(".fullImageLink", (el) => {
+		possibleImageElement = await page.$eval(".fullMedia", (el) => {
 			if (el) {
-				return (el.children[0].children[0] as HTMLImageElement).src;
+				return (el.children[0] as HTMLAnchorElement).href;
 			}
 			return "";
 		});
@@ -49,9 +49,9 @@ export const uploadImage: AfterAuthenticationFunction<UploadImageOptions, Upload
 	successMessage(`${fileName} uploaded!`);
 
 	try {
-		possibleImageElement = await page.$eval(".fullImageLink", (el) => {
+		possibleImageElement = await page.$eval(".fullMedia", (el) => {
 			if (el) {
-				return (el.children[0].children[0] as HTMLImageElement).src;
+				return (el.children[0] as HTMLAnchorElement).href;
 			}
 			return "";
 		});
