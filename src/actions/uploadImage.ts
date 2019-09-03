@@ -11,6 +11,7 @@ export type UploadImageOptions = {
 
 export type UploadImageReturn = Promise<string>;
 
+// TODO: Factor out some things to use igem-constants
 export const uploadImage: AfterAuthenticationFunction<UploadImageOptions, UploadImageReturn> = async (browser, page, { igemTeam, igemYear, imagePath, fileName }) => {
 	let supposedFinalImageLink = `${HTTPS}${igemYear}.igem.org/File:T--${igemTeam}--${fileName}`;
 	await page.goto(supposedFinalImageLink, { waitUntil: "domcontentloaded" });

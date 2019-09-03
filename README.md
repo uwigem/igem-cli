@@ -11,7 +11,6 @@ This is a repository for the iGEM CLI by Team Washington. Currently it is a work
 ## General Installation
 
 1. `nvm use`
-2. `npm install`
 2. `npm installglobal`
 3. `igem-cli`
 

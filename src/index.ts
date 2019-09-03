@@ -39,7 +39,7 @@ if (!igemUsername || !igemPassword || !igemTeam || !igemYear) {
 
 // Set up routes
 program
-	.version("0.0.2")
+	.version("1.0.0")
 	.description("Deploy to the iGEM Site easier!")
 	.option("-e, --edit <page name> <content path>", "Create a new page or edit an existing page.")
 	.option("-a, --all <content folder>", "Create content pages from html files inside a specified folder")
